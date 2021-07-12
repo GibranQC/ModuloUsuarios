@@ -1,0 +1,176 @@
+<div class="card table">
+    <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <h3 class="card-title" style="display: flex; align-items: center;">
+            Listado de perfiles
+            <i data-toggle="modal" data-target="#infoModal" class="fas fa-question-circle" style="font-size: 1.2rem; color: #ff196a; margin-left: 10px; cursor: pointer;"></i>
+        </h3>
+        <button (click)="newProfile()" [disabled]="!permissions.create" class="btn btn-custom btn-wd" ><i class="fa fa-plus"></i> Nuevo perfil</button>
+    </div>
+    
+    <hr>
+
+    <div class="row" style="padding: 0px 15px;">
+
+        <div class="col-md-4 col-sm-4 col-xs-12">
+
+            <div style="margin-top: 5px;">
+                <div class="form-group">
+                    <label >Buscar</label>
+                    <div style="display: flex; ">
+                        <input type="text" [(ngModel)]="filter.filtering.name" (keyup.enter)="filter.pager.page = 1; getProfiles();" (keypress)="textValidation($event)" maxlength="50" class="form-control" placeholder="Ej. Osia" />
+                        
+                        <button class="btn btn-outline" type="button" (click)="filter.pager.page = 1; filter.filtering.name = ''; getProfiles();"><i class="fas fa-eraser"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-bottom: 10px;">
+                <span (click)="filter.pager.page = 1; getProfiles();" style="padding: 10px 0px; cursor: pointer;"><i class="fas fa-sync-alt" ></i> Actualizar</span>
+            </div>
+
+            <div class="card-body table-responsive" style="padding: 0px; max-height: 800px; overflow-y: auto;">
+        
+                <table class="table" style="border: 1px solid #eee;">
+                    <thead>
+                        <tr>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let p of profiles; let i = index;" [ngClass]="{ 'item-active': p._id == profile._id }">
+                            <td style="white-space: pre-line;">
+                                <b class="link" (click)="selectProfile(i)">{{ p.name }}</b><br>
+                                <span>{{ p.description }}</span>
+                            </td>
+                        </tr>
+        
+                        <tr *ngIf="!profiles || profiles.length == 0">
+                            <td colspan="1" class="not-found" >
+                                No se encontraron perfiles.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: center; margin: 5px 0px;">
+                <pagination
+                    [(ngModel)]="filter.pager.page"
+                    (pageChanged)="filter.pager.page = $event.page; getProfiles();"
+                    [maxSize]="3"
+                    [itemsPerPage]="filter.pager.limit"
+                    [totalItems]="totalProfiles"
+                    [boundaryLinks]="true"
+                    previousText="&lsaquo;"
+                    nextText="&rsaquo;"
+                    firstText="&laquo;"
+                    lastText="&raquo;">
+                </pagination>
+            </div>
+
+
+        </div>
+
+        <div class="col-md-8 col-sm-8 col-xs-12">
+            <!--div *ngIf="profile && profile.permissions.length > 0"-->
+            <form id="profileForm" #profileForm="ngForm" (ngSubmit)="profileForm.valid ? method == 'create'? createProfile(): updateProfile(): ''" novalidate autocomplete="off" >
+                <div class="row">
+                    <div class="col-md-4 col-sm-4 col-xs-12">
+                        <div class="form-group">
+                            <label class="required">Nombre del perfil</label>
+                            <input type="text" id="inName" [(ngModel)]="profile.name" (keypress)="textValidation($event)" name="fname" #fname="ngModel" maxlength="50" required class="form-control" placeholder="Ej. Osia" />
+                            
+                            <div *ngIf="profileForm.submitted && fname.errors">
+                                <small [hidden]="!fname.errors.required" class="form-text validation" >
+                                    El nombre es requerido.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8 col-sm-8 col-xs-12">
+                        <div class="form-group">
+                            <label class="required">Descripción</label>
+                            <input type="text" [(ngModel)]="profile.description" (keypress)="textValidation($event)" name="fdescription" #fdescription="ngModel" maxlength="100" required class="form-control" placeholder="Ej. Persona encargada de las actividades del hospital" />
+                            
+                            <div *ngIf="profileForm.submitted && fdescription.errors">
+                                <small [hidden]="!fdescription.errors.required" class="form-text validation" >
+                                    La descripción es requerida.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+    
+                <div class="row" style="margin-top: 15px; padding: 0px 15px;">
+    
+                    <ul class="list-group" style="width: 100%; /*max-height: 800px; overflow-y: auto;*/">
+                        <li *ngFor="let screen of profile.permissions; let i = index;" style="list-style: none;">
+                            <div class="list-group-item d-flex align-items-center" style="background:#f5f5f5; padding: 2px 10px;">
+                                <div class="form-check">
+                                    <input [(ngModel)]="screen.isSelected" (ngModelChange)="selectOrDeselectActions(i)" name="fscreen{{i}}" class="form-check-input" type="checkbox" id="screen{{ i }}" >
+                                    <label for="screen{{ i }}" style="margin-left: 5px;" >
+                                        {{ screen.module }}
+                                    </label>
+                                </div>
+                            </div>
+                            <ul class="list-group" >
+                                <li *ngFor="let action of screen.privileges; let j = index;" class="list-group-item d-flex align-items-center" style="padding: 2px 30px;">
+                                    <div class="form-check">
+                                        <input [(ngModel)]="action.active" (ngModelChange)="validateAll(i)" name="faction{{ i }}{{ j }}" class="form-check-input" type="checkbox" id="action{{ i }}{{ j }}">
+                                        <label for="action{{ i }}{{ j }}" style="margin-left: 5px;" >
+                                            {{ action.name }}
+                                        </label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                </div>
+                
+                <div class="text-right" style="padding-top: 25px; margin-top: 30px; border-top: 1px dashed #ddd;">
+                    <button (click)="cancelProfile()" type="button" class="btn btn-danger btn-wd" style="margin-right: 15px;" data-dismiss="modal" ><i class="fa fa-times"></i> Cancelar</button>
+                    <button type="submit" *ngIf="method == 'create'" [disabled]="!permissions.create" class="btn btn-custom btn-wd" ><i class="fas fa-save"></i> Guardar</button>
+                    <button type="submit" *ngIf="method == 'update'" [disabled]="!permissions.update" class="btn btn-custom btn-wd" ><i class="fas fa-save"></i> Actualizar</button>
+                </div>
+            </form>
+            <!--/div-->
+
+            <!--div *ngIf="!profile || profile.permissions.length == 0" style="text-align: center; text-transform: uppercase; color: gray; margin-top: 150px; padding: 15px;">
+                <i class="fas fa-id-card" style="font-size: 120px; display: block;"></i><br>
+                <h1>No hay un perfil seleccionado.</h1>
+            </div-->
+
+        </div>
+    </div>
+
+</div>
+
+
+<div class="modal" role="dialog" tabindex='-1' id="infoModal">
+    <div class="modal-dialog" >
+        <div class="modal-content">
+        
+            <div class="modal-header" style="padding: 0px;" >
+                <div class="title-content" style="margin-bottom: 0px;">
+                    <span class="icon"><i class="fas fa-info-circle"></i></span>
+                    <span style="font-size: 20px;">Manual de usuario.</span>
+                </div>
+            </div>
+    
+            <div class="modal-body" style="padding: 20px;">
+                <carousel>
+                    <slide style="max-height: 600px; overflow-y: auto;">
+                        <img src="assets/img/infografias/Editar-perfil.jpg" alt="first slide" style="display: block; width: 100%;">
+                    </slide>
+                </carousel>
+        
+                <div class="text-right" style="padding-top: 25px; margin-top: 30px; border-top: 1px dashed #ddd;">
+                    <button type="button" class="btn btn-custom btn-wd" data-dismiss="modal" ><i class="fas fa-check"></i> Aceptar</button>
+                </div>
+        
+            </div>
+        </div>
+    </div>
+</div>

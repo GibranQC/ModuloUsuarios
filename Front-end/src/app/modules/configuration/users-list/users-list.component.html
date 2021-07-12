@@ -1,0 +1,80 @@
+<div class="card table">
+    <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <h3 class="card-title" style="display: flex; align-items: center;">
+            Listado de usuarios
+            <!--i data-toggle="modal" data-target="#infoModal" class="fas fa-question-circle" style="font-size: 22px; color: #ff196a; margin-left: 10px; cursor: pointer;"></i-->
+        </h3>
+        <button (click)="goToUsersForm('')" [disabled]="!permissions.create" class="btn btn-custom btn-wd" ><i class="fa fa-plus"></i> Nuevo usuario</button>
+    </div>
+    
+    <hr>
+
+    <div class="row" style="padding: 0px 15px;">
+
+        <div class="col-md-4 col-sm-3 col-xs-12">
+            <div class="form-group">
+                <label >Nombre del Usuario</label>
+                
+                <div style="display: flex;">
+                    <input type="text" [(ngModel)]="filter.filtering.username" (keyup.enter)="getUsers()" (keypress)="alphaValidation($event)" maxlength="50" class="form-control" placeholder="Ej. joaquin.torres@gmail.com" />
+                
+                    <button class="btn btn-outline" type="button" (click)="filter.filtering.username = ''; getUsers()"><i class="fas fa-eraser"></i></button>
+                </div>
+            </div>
+        </div>
+
+       
+    </div>
+
+
+
+    <div class="card-body table-responsive" style="padding-top: 30px;">
+        
+        <table class="table table-striped" style="border: 1px solid #eee;">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th >Nombre completo</th>
+                    <th >Usuario</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users; let i = index;">
+                    <td class="text-center">{{ ( ((filter.pager.page - 1) * filter.pager.limit) + (i + 1) ) }}</td>
+                    <td style="max-width: 220px; white-space: normal;" >
+                        <a (click)="goToUsersForm(user._id)" href="javascript:void(0)" class="link">{{ user.fullname }}</a>
+                    </td>
+                    <td ><b>{{ user.username }}</b></td>
+                    <td >{{ user.profile.name }}</td>
+                    <td class="text-center">
+                    	<!--button type="button" (click)="goToUsersForm(user._id);" class="btn btn-info" style="margin-right: 5px;"> <i class="fas fa-pencil-alt"></i></button-->
+                        <button type="button" (click)="deleteUser(user._id);" [disabled]="!permissions.delete" class="btn btn-danger" ><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+
+                <tr *ngIf="!users || users.length == 0">
+                    <td colspan="7" class="not-found" >
+                        No se encontraron usuarios.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="display: flex; justify-content: center; margin: 5px 0px;">
+        <pagination
+            [(ngModel)]="filter.pager.page"
+            (pageChanged)="filter.pager.page = $event.page; getUsers();"
+            [maxSize]="5"
+            [itemsPerPage]="filter.pager.limit"
+            [totalItems]="totalUsers"
+            [boundaryLinks]="true"
+            previousText="&lsaquo;"
+            nextText="&rsaquo;"
+            firstText="&laquo;"
+            lastText="&raquo;">
+        </pagination>
+    </div>
+
+</div>

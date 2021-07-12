@@ -1,0 +1,137 @@
+<div class="card table">
+    <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <h3 class="card-title" style="display: flex; align-items: center;">
+            {{ method == 'create' ? 'Nuevo': 'Actualizar' }} usuario
+            <i data-toggle="modal" data-target="#infoModal" class="fas fa-question-circle" style="font-size: 1.2rem; color: #ff196a; margin-left: 10px; cursor: pointer;"></i>
+        </h3>
+    </div>
+
+    <hr>
+
+    <div class="card-body" style="padding: 0; padding-top: 15px;">
+        <form id="userForm" #userForm="ngForm" (ngSubmit)="userForm.valid ? method == 'create'? createUser(): updateUser(): ''" novalidate autocomplete="off">
+            
+            <h5 class="subtitle">Datos personales</h5>
+            
+            <div class="row" style="padding: 0px 15px;">
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label class="required">Nombre(s)</label>
+                        <input type="text" id="inName" [(ngModel)]="user.name" #fname="ngModel" name="fname" required (keypress)="textValidation($event)" class="form-control" placeholder="Ej. Francisco" maxlength="30" />
+                        
+                        <div *ngIf="userForm.submitted && fname.errors">
+                            <small [hidden]="!fname.errors.required" class="form-text validation" >
+                                El nombre(s) es requerido.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label class="required">Apellido paterno</label>
+                        <input type="text" [(ngModel)]="user.lastname" #flastname="ngModel" name="flastname" required (keypress)="textValidation($event)" class="form-control" placeholder="Ej. Hernández" maxlength="30" />
+
+                        <div *ngIf="userForm.submitted && flastname.errors">
+                            <small [hidden]="!flastname.errors.required" class="form-text validation" >
+                                El apellido paterno es requerido.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label class="required">Apellido materno</label>
+                        <input type="text" [(ngModel)]="user.lastname2" #flastname2="ngModel" name="flastname2" required (keypress)="textValidation($event)" class="form-control" placeholder="Ej. Sánchez" maxlength="30" />
+
+                        <div *ngIf="userForm.submitted && flastname2.errors">
+                            <small [hidden]="!flastname2.errors.required" class="form-text validation" >
+                                El apellido materno es requerido.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <h5 class="subtitle">Identificación de usuario</h5>
+
+            <div class="row" style="padding: 0px 15px;">
+
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label class="required">Usuario</label>
+                        <input type="text" [(ngModel)]="user.username" #fusername="ngModel" name="fusername" [pattern]="emailPattern" required class="form-control" placeholder="Ej. francisco@gmail.com" />
+
+                        <div *ngIf="userForm.submitted && fusername.errors">
+                            <small [hidden]="!fusername.errors.required" class="form-text validation" >
+                                El usuario es requerido.
+                            </small>
+                            <small [hidden]="!fusername.errors.pattern" class="form-text validation" >
+                                El formato del usuario no es válido.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label class="required">Contraseña</label>
+                        
+                        <div style="display: flex;">
+                            <input type="{{ show ? 'text': 'password' }}" [(ngModel)]="user.passwordEncrypt" [pattern]="passPattern" [disabled]="lock" #fpassword="ngModel" name="fpassword" required class="form-control" placeholder="Ej. ******" maxlength="15" />
+                            
+                            <button class="btn btn-outline" type="button" *ngIf="!lock" (click)="show = !show"><i class="fas" [ngClass]="{ 'fa-eye': !show, 'fa-eye-slash': show }" ></i></button>
+                            <button class="btn btn-outline" type="button" *ngIf="method == 'update'" (click)="lock = !lock; user.passwordEncrypt = '';"><i class="fas" [ngClass]="{ 'fa-lock': !lock, 'fa-lock-open': lock }" ></i></button>
+                        </div>
+                        
+                        <div *ngIf="userForm.submitted && fpassword.errors">
+                            <small [hidden]="!fpassword.errors.required" class="form-text validation" >
+                                La contraseña es requerida.
+                            </small>
+                            <!--small [hidden]="!fpassword.errors.minlength" class="form-text validation" >
+                                La contraseña debe tener minimo 10 caracteres y maximo 16.
+                            </small-->
+                            <small [hidden]="!fpassword.errors.pattern" class="form-text validation" >
+                                La contraseña debe contener al menos 1 mayúscula, 1 minúscula, 1 número, 1 caracter especial y entre 10 y 15 caracteres.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label class="required">Perfil</label>
+                        <ng-select
+                            [items]="profiles"
+                            [multiple]="false"
+                            [closeOnSelect]="true"
+                            bindLabel="name"
+                            #fprofile="ngModel" 
+                            name="fprofile"
+                            placeholder="Selecciona un perfil"
+                            notFoundText="No se encontraron perfiles."
+                            (change)="validateProfile(true)"
+                            required
+                            [(ngModel)]="user.profile" >
+                        </ng-select>
+
+                        <div *ngIf="userForm.submitted && fprofile.errors">
+                            <small [hidden]="!fprofile.errors.required" class="form-text validation" >
+                                El perfil es requerido.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div style="text-align: right; padding-top: 30px;">
+                <button type="button" (click)="cancelUser()" class="btn btn-danger" style="margin-right: 10px;" ><i class="fas fa-times"></i> Cancelar</button>
+                <button type="submit" *ngIf="method == 'create'" [disabled]="!permissions.create" class="btn btn-custom" style="margin-right: 10px;" ><i class="fas fa-save"></i> Guardar</button>
+                <button type="submit" *ngIf="method == 'update'" [disabled]="!permissions.update" class="btn btn-custom"  ><i class="fas fa-save"></i> Actualizar</button>
+            </div>
+
+        </form>
+    </div>
+</div>

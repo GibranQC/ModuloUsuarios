@@ -1,0 +1,45 @@
+.login-wrapper {
+    height: 100vh;
+}
+
+.login-wrapper > * {
+    height: 100%;
+}
+
+.login-wrapper .bg-pic {
+    position: absolute;
+    width: 100%;
+    overflow: hidden;
+}
+
+.login-wrapper .bg-pic > img {
+    height: 100%;
+    opacity: 1;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.login-wrapper .login-container {
+    width: 496px;
+    display: block;
+    position: relative;
+    float: right;
+}
+.login-wrapper .bg-caption {
+    width: 500px;
+}
+
+/* Responsive handlers : Login
+------------------------------------
+*/
+@media (max-width: 768px) {
+    .login-wrapper .login-container {
+        width: 100%;
+    }
+}
+@media only screen and (max-width: 321px) {
+    .login-wrapper .login-container {
+        width: 100%;
+    }
+}
